@@ -23,6 +23,7 @@ try {
     Copy-Item -LiteralPath (Join-Path $ProjectDirectory "licenses\quickjs-ng.txt") -Destination (Join-Path $Stage "licenses")
     Copy-Item -LiteralPath (Join-Path $ProjectDirectory "licenses\yt-dlp.txt") -Destination (Join-Path $Stage "licenses")
     Copy-Item -LiteralPath (Join-Path $ProjectDirectory "scripts\update.ps1") -Destination (Join-Path $Stage "tools\update.ps1")
+    Copy-Item -LiteralPath (Join-Path $ProjectDirectory "scripts\install-ffmpeg.ps1") -Destination (Join-Path $Stage "tools\install-ffmpeg.ps1")
 
     $YtDlpPath = Join-Path $Stage "tools\yt-dlp.exe"
     $QuickJsPath = Join-Path $Stage "tools\qjs.exe"

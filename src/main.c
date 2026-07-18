@@ -1,4 +1,5 @@
 #include "deps.h"
+#include "ffmpeg.h"
 #include "subprocess.h"
 #include "update.h"
 
@@ -22,8 +23,8 @@ static void print_usage(FILE *stream) {
             "  void-yt --version\n\n"
             "Automatic updates are checked at launch. Set VOID_YT_NO_UPDATE=1\n"
             "to disable the check.\n\n"
-            "FFmpeg is optional. Without it, Void-YT requests the best stream\n"
-            "that already contains both video and audio.\n",
+            "Missing FFmpeg is installed on the first doctor or download command.\n"
+            "Set VOID_YT_NO_FFMPEG_INSTALL=1 to keep combined formats only.\n",
             VOIDYT_VERSION);
 }
 
@@ -139,6 +140,7 @@ int main(int argc, char **argv) {
         return 0;
     }
     if (strcmp(argv[1], "doctor") == 0) {
+        voidyt_ensure_ffmpeg(&deps);
         return run_doctor(&deps);
     }
     if (strcmp(argv[1], "download") == 0) {
@@ -146,6 +148,7 @@ int main(int argc, char **argv) {
             fprintf(stderr, "void-yt: download requires a URL\n");
             return 2;
         }
+        voidyt_ensure_ffmpeg(&deps);
         return run_ytdlp(&deps, 0, 2, argc, argv);
     }
     if (strcmp(argv[1], "formats") == 0) {
@@ -153,9 +156,11 @@ int main(int argc, char **argv) {
             fprintf(stderr, "void-yt: formats requires a URL\n");
             return 2;
         }
+        voidyt_ensure_ffmpeg(&deps);
         return run_ytdlp(&deps, 1, 2, argc, argv);
     }
     if (looks_like_url(argv[1])) {
+        voidyt_ensure_ffmpeg(&deps);
         return run_ytdlp(&deps, 0, 1, argc, argv);
     }
 

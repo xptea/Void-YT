@@ -4,10 +4,12 @@ Void-YT is a small, open-source C terminal application for downloading media.
 Official release archives bundle a pinned yt-dlp and QuickJS, so users do not
 need Python, Node, Deno, or a separate yt-dlp installation.
 
-FFmpeg is deliberately optional. When FFmpeg is unavailable, Void-YT downloads
-the best format that already contains both video and audio. When FFmpeg is on
-`PATH` (or configured with `VOID_YT_FFMPEG`), yt-dlp can merge separate
-high-quality streams and perform post-processing.
+FFmpeg is downloaded on demand instead of being bundled, keeping the initial
+Void-YT install small. On the first `doctor`, `download`, or URL command,
+Void-YT uses an existing FFmpeg from `PATH` when available. Otherwise it
+downloads a pinned build from a provider linked by ffmpeg.org, verifies its
+SHA-256 checksum and `ffmpeg -version`, and stores it in Void-YT's private
+`tools` directory. It never changes the global system `PATH`.
 
 > Only download media you are authorized to access. Void-YT does not bypass DRM.
 
@@ -62,6 +64,7 @@ Environment overrides:
 - `VOID_YT_YTDLP`: path to a different yt-dlp executable.
 - `VOID_YT_QJS`: path to a different `qjs` executable.
 - `VOID_YT_FFMPEG`: path to an FFmpeg executable.
+- `VOID_YT_NO_FFMPEG_INSTALL=1`: keep FFmpeg optional and use combined formats only.
 - `VOID_YT_CURL`: path to the curl executable used for update checks.
 - `VOID_YT_REPO`: installer repository override, such as `owner/Void-YT`.
 - `VOID_YT_INSTALL_DIR`: installer destination override.

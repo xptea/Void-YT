@@ -1,5 +1,6 @@
 #include "deps.h"
 #include "subprocess.h"
+#include "update.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +20,8 @@ static void print_usage(FILE *stream) {
             "  void-yt formats URL [yt-dlp options]\n"
             "  void-yt doctor\n"
             "  void-yt --version\n\n"
+            "Automatic updates are checked at launch. Set VOID_YT_NO_UPDATE=1\n"
+            "to disable the check.\n\n"
             "FFmpeg is optional. Without it, Void-YT requests the best stream\n"
             "that already contains both video and audio.\n",
             VOIDYT_VERSION);
@@ -38,6 +41,7 @@ static int run_doctor(const voidyt_dependencies *deps) {
     print_dependency("yt-dlp", deps->ytdlp, 1);
     print_dependency("QuickJS", deps->qjs, 1);
     print_dependency("FFmpeg", deps->ffmpeg, 0);
+    print_dependency("curl", deps->curl, 0);
     if (deps->ytdlp[0] == '\0' || deps->qjs[0] == '\0') {
         fprintf(stderr,
                 "\nThis source build is missing a required tool. Official release "
@@ -46,6 +50,9 @@ static int run_doctor(const voidyt_dependencies *deps) {
     }
     if (deps->ffmpeg[0] == '\0') {
         printf("\nFFmpeg features are disabled; combined audio/video downloads still work.\n");
+    }
+    if (deps->curl[0] == '\0') {
+        printf("Automatic update checks are disabled because curl is unavailable.\n");
     }
     return 0;
 }
@@ -117,6 +124,10 @@ static int run_ytdlp(const voidyt_dependencies *deps,
 int main(int argc, char **argv) {
     voidyt_dependencies deps;
     voidyt_discover_dependencies(argv[0], &deps);
+
+    if (voidyt_maybe_auto_update(&deps, argc, argv)) {
+        return 0;
+    }
 
     if (argc < 2 || strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0 ||
         strcmp(argv[1], "help") == 0) {

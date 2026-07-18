@@ -22,6 +22,7 @@ try {
     Copy-Item -LiteralPath (Join-Path $ProjectDirectory "THIRD_PARTY_NOTICES.md") -Destination $Stage
     Copy-Item -LiteralPath (Join-Path $ProjectDirectory "licenses\quickjs-ng.txt") -Destination (Join-Path $Stage "licenses")
     Copy-Item -LiteralPath (Join-Path $ProjectDirectory "licenses\yt-dlp.txt") -Destination (Join-Path $Stage "licenses")
+    Copy-Item -LiteralPath (Join-Path $ProjectDirectory "scripts\update.ps1") -Destination (Join-Path $Stage "tools\update.ps1")
 
     $YtDlpPath = Join-Path $Stage "tools\yt-dlp.exe"
     $QuickJsPath = Join-Path $Stage "tools\qjs.exe"

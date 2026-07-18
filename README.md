@@ -47,11 +47,24 @@ void-yt download URL [additional yt-dlp options]
 Additional arguments following the URL are passed directly to yt-dlp without
 invoking a shell.
 
+## Automatic updates
+
+On every normal launch, Void-YT requests the small `version.txt` file from the
+latest GitHub Release. If a newer semantic version is available, it downloads
+the correct platform archive, verifies its SHA-256 checksum, waits for the
+current executable to exit, installs the update, and restarts the original
+command. An offline or failed check never blocks normal use.
+
+Set `VOID_YT_NO_UPDATE=1` to disable automatic update checks. Source builds that
+do not include `tools/update.sh` or `tools/update.ps1` report the available
+version but do not modify themselves.
+
 Environment overrides:
 
 - `VOID_YT_YTDLP`: path to a different yt-dlp executable.
 - `VOID_YT_QJS`: path to a different `qjs` executable.
 - `VOID_YT_FFMPEG`: path to an FFmpeg executable.
+- `VOID_YT_CURL`: path to the curl executable used for update checks.
 - `VOID_YT_REPO`: installer repository override, such as `owner/Void-YT`.
 - `VOID_YT_INSTALL_DIR`: installer destination override.
 
@@ -71,15 +84,14 @@ standalone tools into a `tools` directory beside the Void-YT executable.
 
 ## Release process
 
-Push a version tag such as `v0.1.0`. GitHub Actions will:
+Push a version tag such as `v0.2.0`. GitHub Actions will:
 
 1. Build and test the C executable on Linux, macOS, and Windows.
 2. Produce Linux x86-64/ARM64, universal macOS, and Windows x86-64 archives.
 3. Add checksum-verified yt-dlp and QuickJS binaries.
-4. Generate SHA-256 checksums and build-provenance attestations.
-5. Publish the archives and stamped installers to GitHub Releases.
+4. Generate SHA-256 checksums, `version.txt`, and build-provenance attestations.
+5. Publish the archives, updater metadata, and stamped installers to GitHub Releases.
 
 Dependency versions and hashes are intentionally pinned in
 `scripts/package.sh` and `scripts/package.ps1`. Updating either tool requires
 updating its version and verified SHA-256 values together.
-

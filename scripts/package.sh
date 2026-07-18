@@ -26,7 +26,8 @@ cp "$project_dir/LICENSE" "$stage/LICENSE"
 cp "$project_dir/THIRD_PARTY_NOTICES.md" "$stage/THIRD_PARTY_NOTICES.md"
 cp "$project_dir/licenses/quickjs-ng.txt" "$stage/licenses/quickjs-ng.txt"
 cp "$project_dir/licenses/yt-dlp.txt" "$stage/licenses/yt-dlp.txt"
-chmod 755 "$stage/void-yt"
+cp "$project_dir/scripts/update.sh" "$stage/tools/update.sh"
+chmod 755 "$stage/void-yt" "$stage/tools/update.sh"
 
 verify_sha256() {
     expected=$1

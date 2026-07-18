@@ -19,13 +19,13 @@ jobs:
       - name: Build x86-64
         run: |
           version="${GITHUB_REF_NAME#v}"
-          cmake -S . -B build-x64 -DCMAKE_BUILD_TYPE=Release -DVOIDYT_BUILD_VERSION="$version" -DCMAKE_EXE_LINKER_FLAGS=-static
+          cmake -S . -B build-x64 -DCMAKE_BUILD_TYPE=Release -DVOIDYT_BUILD_VERSION="$version" -DVOIDYT_UPDATE_REPOSITORY="$GITHUB_REPOSITORY" -DCMAKE_EXE_LINKER_FLAGS=-static
           cmake --build build-x64
           ctest --test-dir build-x64 --output-on-failure
       - name: Build ARM64
         run: |
           version="${GITHUB_REF_NAME#v}"
-          cmake -S . -B build-arm64 -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DVOIDYT_BUILD_VERSION="$version" -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_EXE_LINKER_FLAGS=-static
+          cmake -S . -B build-arm64 -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DVOIDYT_BUILD_VERSION="$version" -DVOIDYT_UPDATE_REPOSITORY="$GITHUB_REPOSITORY" -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_EXE_LINKER_FLAGS=-static
           cmake --build build-arm64
       - name: Package
         run: |
@@ -46,7 +46,7 @@ jobs:
       - name: Build universal binary
         run: |
           version="${GITHUB_REF_NAME#v}"
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DVOIDYT_BUILD_VERSION="$version" -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DVOIDYT_BUILD_VERSION="$version" -DVOIDYT_UPDATE_REPOSITORY="$GITHUB_REPOSITORY" -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
           cmake --build build
       - name: Package
         run: |
@@ -67,7 +67,7 @@ jobs:
         shell: pwsh
         run: |
           $version = $env:GITHUB_REF_NAME.TrimStart("v")
-          cmake -S . -B build -DVOIDYT_BUILD_VERSION="$version" -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+          cmake -S . -B build -DVOIDYT_BUILD_VERSION="$version" -DVOIDYT_UPDATE_REPOSITORY="$env:GITHUB_REPOSITORY" -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
       - name: Build and test
         run: |
           cmake --build build --config Release
@@ -97,6 +97,7 @@ jobs:
         run: |
           sed "s|@GITHUB_REPOSITORY@|$GITHUB_REPOSITORY|g" scripts/install.sh > dist/install.sh
           sed "s|@GITHUB_REPOSITORY@|$GITHUB_REPOSITORY|g" scripts/install.ps1 > dist/install.ps1
+          printf '%s\n' "${GITHUB_REF_NAME#v}" > dist/version.txt
           cd dist
           sha256sum void-yt-* > checksums.sha256
       - name: Attest release archives
@@ -109,4 +110,3 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --generate-notes
-

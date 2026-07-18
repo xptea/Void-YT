@@ -29,3 +29,20 @@ string(FIND "${readme}" "Out-String | Invoke-Expression" windows_complete_script
 if(windows_complete_script_command EQUAL -1)
     message(FATAL_ERROR "The Windows install command must evaluate the complete downloaded script")
 endif()
+
+foreach(installer IN ITEMS windows_installer unix_installer)
+    string(FIND "${${installer}}" "doctor" doctor_setup)
+    if(doctor_setup EQUAL -1)
+        message(FATAL_ERROR "${installer} must finish dependency setup automatically")
+    endif()
+
+    string(FIND "${${installer}}" "Run: void-yt" polished_run_message)
+    if(polished_run_message EQUAL -1)
+        message(FATAL_ERROR "${installer} must finish with the simple usage instruction")
+    endif()
+
+    string(FIND "${${installer}}" "run: void-yt doctor" manual_doctor_message)
+    if(NOT manual_doctor_message EQUAL -1)
+        message(FATAL_ERROR "${installer} must not ask the user to run doctor")
+    endif()
+endforeach()

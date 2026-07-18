@@ -1,4 +1,5 @@
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
 $Repository = if ($env:VOID_YT_REPO) { $env:VOID_YT_REPO } else { "@GITHUB_REPOSITORY@" }
 $InstallDirectory = if ($env:VOID_YT_INSTALL_DIR) { $env:VOID_YT_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA "Void-YT" }
 $Asset = "void-yt-windows-x86_64.zip"
@@ -13,8 +14,8 @@ $Unpacked = Join-Path $WorkDirectory "unpacked"
 $BaseUrl = "https://github.com/$Repository/releases/latest/download"
 
 try {
+    Write-Host "Installing Void-YT..."
     New-Item -ItemType Directory -Path $Unpacked -Force | Out-Null
-    Write-Host "Downloading $Asset..."
     Invoke-WebRequest -Uri "$BaseUrl/$Asset" -OutFile $Archive
     Invoke-WebRequest -Uri "$BaseUrl/checksums.sha256" -OutFile $Checksums
 
@@ -36,8 +37,34 @@ try {
         [Environment]::SetEnvironmentVariable("Path", $NewPath, "User")
         $env:Path += ";$InstallDirectory"
     }
-    Write-Host "Void-YT installed to $InstallDirectory"
-    Write-Host "Open a new terminal and run: void-yt doctor"
+
+    Write-Host "Setting up media tools (one-time download)..."
+    $PreviousNoUpdate = $env:VOID_YT_NO_UPDATE
+    $PreviousErrorActionPreference = $ErrorActionPreference
+    try {
+        $env:VOID_YT_NO_UPDATE = "1"
+        # Windows PowerShell 5.1 wraps native stderr as ErrorRecord objects.
+        # Capture those records and trust the executable's exit code instead.
+        $ErrorActionPreference = "Continue"
+        $DoctorLines = & (Join-Path $InstallDirectory "void-yt.exe") doctor 2>&1
+        $DoctorExitCode = $LASTEXITCODE
+        $DoctorOutput = $DoctorLines | Out-String
+    }
+    finally {
+        if ($null -eq $PreviousNoUpdate) {
+            Remove-Item Env:\VOID_YT_NO_UPDATE -ErrorAction SilentlyContinue
+        }
+        else {
+            $env:VOID_YT_NO_UPDATE = $PreviousNoUpdate
+        }
+        $ErrorActionPreference = $PreviousErrorActionPreference
+    }
+    if ($DoctorExitCode -ne 0 -or $DoctorOutput -notmatch "(?m)^\[ok\]\s+FFmpeg\s+") {
+        throw "Media tool setup failed.`n$DoctorOutput"
+    }
+
+    Write-Host "Void-YT is ready."
+    Write-Host 'Run: void-yt "youtube URL"'
 }
 finally {
     if (Test-Path -LiteralPath $WorkDirectory) {

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(void-yt VERSION 0.3.2 LANGUAGES C)
+project(void-yt VERSION 0.3.3 LANGUAGES C)
 
 set(VOIDYT_BUILD_VERSION "${PROJECT_VERSION}" CACHE STRING "Version displayed by the executable")
 set(VOIDYT_UPDATE_REPOSITORY "xptea/Void-YT" CACHE STRING "GitHub repository used for automatic updates")

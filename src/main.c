@@ -1,5 +1,6 @@
 #include "deps.h"
 #include "ffmpeg.h"
+#include "interactive.h"
 #include "subprocess.h"
 #include "update.h"
 
@@ -23,6 +24,8 @@ static void print_usage(FILE *stream) {
             "  void-yt --version\n\n"
             "Automatic updates are checked at launch. Set VOID_YT_NO_UPDATE=1\n"
             "to disable the check.\n\n"
+            "Passing only a URL opens the quality menu and folder prompt.\n"
+            "Additional yt-dlp options bypass the interactive menu.\n\n"
             "Missing FFmpeg is installed on the first doctor or download command.\n"
             "Set VOID_YT_NO_FFMPEG_INSTALL=1 to keep combined formats only.\n",
             VOIDYT_VERSION);
@@ -69,12 +72,15 @@ static int run_ytdlp(const voidyt_dependencies *deps,
                      int argc,
                      char **argv) {
     size_t extra = (size_t)(argc - first_forwarded);
-    size_t capacity = extra + 16;
+    size_t capacity = extra + 24;
     const char **child_args = (const char **)calloc(capacity, sizeof(char *));
     char runtime_arg[VOIDYT_PATH_CAP + 16];
+    voidyt_download_selection selection;
     size_t index = 0;
+    int interactive_result = 0;
     int i;
     int result;
+    int written;
 
     if (deps->ytdlp[0] == '\0') {
         fprintf(stderr,
@@ -86,12 +92,22 @@ static int run_ytdlp(const voidyt_dependencies *deps,
         fprintf(stderr, "void-yt: out of memory\n");
         return 2;
     }
+    if (!list_formats && argc == first_forwarded + 1) {
+        interactive_result = voidyt_prepare_interactive_download(
+            deps, argv[first_forwarded], &selection);
+        if (interactive_result < 0) {
+            free(child_args);
+            printf("Download cancelled.\n");
+            return 130;
+        }
+    }
 
     child_args[index++] = deps->ytdlp;
     child_args[index++] = "--newline";
     child_args[index++] = "--progress";
     if (deps->qjs[0] != '\0') {
-        if (snprintf(runtime_arg, sizeof(runtime_arg), "quickjs:%s", deps->qjs) < 0) {
+        written = snprintf(runtime_arg, sizeof(runtime_arg), "quickjs:%s", deps->qjs);
+        if (written < 0 || (size_t)written >= sizeof(runtime_arg)) {
             free(child_args);
             return 2;
         }
@@ -108,6 +124,17 @@ static int run_ytdlp(const voidyt_dependencies *deps,
     } else if (!list_formats) {
         child_args[index++] = "--format";
         child_args[index++] = "best[acodec!=none][vcodec!=none]/best";
+    }
+    if (interactive_result > 0) {
+        child_args[index++] = "--format";
+        child_args[index++] = selection.format;
+        child_args[index++] = "--paths";
+        child_args[index++] = selection.directory;
+        if (selection.audio_only) {
+            child_args[index++] = "--extract-audio";
+            child_args[index++] = "--audio-format";
+            child_args[index++] = "mp3";
+        }
     }
     if (list_formats) {
         child_args[index++] = "--list-formats";

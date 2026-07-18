@@ -1,0 +1,29 @@
+{
+  "title": "Void-YT menu fixture",
+  "duration": 120,
+  "formats": [
+    {
+      "format_id": "audio-m4a",
+      "ext": "m4a",
+      "vcodec": "none",
+      "acodec": "mp4a.40.2",
+      "filesize": 2000000
+    },
+    {
+      "format_id": "video-720",
+      "ext": "mp4",
+      "height": 720,
+      "vcodec": "avc1.4d401f",
+      "acodec": "none",
+      "filesize": 5000000
+    },
+    {
+      "format_id": "video-1080",
+      "ext": "mp4",
+      "height": 1080,
+      "vcodec": "avc1.640028",
+      "acodec": "none",
+      "filesize": 10000000
+    }
+  ]
+}

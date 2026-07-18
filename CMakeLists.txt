@@ -13,6 +13,7 @@ add_executable(void-yt
     src/main.c
     src/deps.c
     src/ffmpeg.c
+    src/interactive.c
     src/process.c
     src/update.c
 )

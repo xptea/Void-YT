@@ -45,7 +45,12 @@ void-yt download URL [additional yt-dlp options]
 ```
 
 Additional arguments following the URL are passed directly to yt-dlp without
-invoking a shell.
+invoking a shell. When a URL is the only argument in an interactive terminal,
+Void-YT loads the available resolutions and estimated sizes, shows an
+arrow-key menu, and then prompts for a download folder. Press Enter to accept
+the default `Downloads` folder, or paste another path. Choosing `audio only`
+extracts an MP3. Supplying explicit yt-dlp options bypasses the menu so scripts
+remain noninteractive.
 
 ## Automatic updates
 
@@ -85,7 +90,7 @@ standalone tools into a `tools` directory beside the Void-YT executable.
 
 ## Release process
 
-Push a version tag such as `v0.2.0`. GitHub Actions will:
+Push a version tag such as `v0.3.0`. GitHub Actions will:
 
 1. Build and test the C executable on Linux, macOS, and Windows.
 2. Produce Linux x86-64/ARM64, universal macOS, and Windows x86-64 archives.

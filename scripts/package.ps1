@@ -24,6 +24,7 @@ try {
     Copy-Item -LiteralPath (Join-Path $ProjectDirectory "licenses\yt-dlp.txt") -Destination (Join-Path $Stage "licenses")
     Copy-Item -LiteralPath (Join-Path $ProjectDirectory "scripts\update.ps1") -Destination (Join-Path $Stage "tools\update.ps1")
     Copy-Item -LiteralPath (Join-Path $ProjectDirectory "scripts\install-ffmpeg.ps1") -Destination (Join-Path $Stage "tools\install-ffmpeg.ps1")
+    Copy-Item -LiteralPath (Join-Path $ProjectDirectory "scripts\format-menu.js") -Destination (Join-Path $Stage "tools\format-menu.js")
 
     $YtDlpPath = Join-Path $Stage "tools\yt-dlp.exe"
     $QuickJsPath = Join-Path $Stage "tools\qjs.exe"
@@ -35,6 +36,15 @@ try {
     }
     if ((Get-FileHash -Algorithm SHA256 $QuickJsPath).Hash.ToLowerInvariant() -ne $QuickJsHash) {
         throw "QuickJS checksum mismatch"
+    }
+
+    $MenuTestOutput = Join-Path $WorkDirectory "menu-test.tsv"
+    & $QuickJsPath --std (Join-Path $ProjectDirectory "scripts\format-menu.js") `
+        (Join-Path $ProjectDirectory "tests\fixtures\formats.json") $MenuTestOutput
+    if ($LASTEXITCODE -ne 0 -or
+        -not (Select-String -Quiet -Path $MenuTestOutput -Pattern "^video\t1080\tmp4\t12000000\t") -or
+        -not (Select-String -Quiet -Path $MenuTestOutput -Pattern "^audio\t0\tmp3\t2000000\t")) {
+        throw "format menu helper test failed"
     }
 
     @"

@@ -26,8 +26,7 @@ curl -fsSL https://github.com/xptea/Void-YT/releases/latest/download/install.sh 
 Windows PowerShell:
 
 ```powershell
-curl.exe -fsSL https://github.com/xptea/Void-YT/releases/latest/download/install.ps1 |
-  powershell -NoProfile -ExecutionPolicy Bypass -Command -
+curl.exe -fsSL https://github.com/xptea/Void-YT/releases/latest/download/install.ps1 | Out-String | Invoke-Expression
 ```
 
 The Unix installer uses `~/.local/share/void-yt` and creates

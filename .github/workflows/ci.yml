@@ -29,7 +29,7 @@ jobs:
         run: |
           app_dir="$RUNNER_TEMP/void-yt-ffmpeg"
           mkdir -p "$app_dir/tools"
-          scripts/install-ffmpeg.sh "$app_dir" "$(command -v curl)"
+          /bin/sh scripts/install-ffmpeg.sh "$app_dir" "$(command -v curl)"
           "$app_dir/tools/ffmpeg" -version
       - name: Test FFmpeg bootstrap (Windows)
         if: runner.os == 'Windows'

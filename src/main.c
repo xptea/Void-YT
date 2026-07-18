@@ -12,6 +12,68 @@
 #define VOIDYT_VERSION "dev"
 #endif
 
+#define VOIDYT_DOWNLOAD_LOG_CAP 65536
+#define VOIDYT_PROGRESS_MARKER "VOIDYT_PROGRESS:"
+#define VOIDYT_DONE_MARKER "VOIDYT_DONE:"
+
+typedef struct voidyt_download_output {
+    char logs[VOIDYT_DOWNLOAD_LOG_CAP];
+    size_t log_length;
+    int last_percent;
+} voidyt_download_output;
+
+static void render_download_progress(int percent) {
+    char bar[31];
+    int filled;
+    int i;
+    if (percent < 0) percent = 0;
+    if (percent > 100) percent = 100;
+    filled = percent * 30 / 100;
+    for (i = 0; i < 30; ++i) {
+        bar[i] = i < filled ? '#' : '-';
+    }
+    bar[30] = '\0';
+    printf("\rDownloading [%s] %3d%%", bar, percent);
+    fflush(stdout);
+}
+
+static void append_download_log(voidyt_download_output *output, const char *line) {
+    size_t available;
+    size_t length;
+    if (output->log_length + 1 >= sizeof(output->logs)) return;
+    available = sizeof(output->logs) - output->log_length - 1;
+    length = strlen(line);
+    if (length > available) length = available;
+    memcpy(output->logs + output->log_length, line, length);
+    output->log_length += length;
+    if (output->log_length + 1 < sizeof(output->logs)) {
+        output->logs[output->log_length++] = '\n';
+    }
+    output->logs[output->log_length] = '\0';
+}
+
+static void handle_download_output(const char *line, void *context) {
+    voidyt_download_output *output = (voidyt_download_output *)context;
+    const char *progress = strstr(line, VOIDYT_PROGRESS_MARKER);
+    char *end = NULL;
+    double value;
+    int percent;
+    if (progress != NULL) {
+        progress += strlen(VOIDYT_PROGRESS_MARKER);
+        value = strtod(progress, &end);
+        if (end != progress) {
+            percent = (int)(value + 0.5);
+            if (percent != output->last_percent) {
+                render_download_progress(percent);
+                output->last_percent = percent;
+            }
+        }
+        return;
+    }
+    if (strstr(line, VOIDYT_DONE_MARKER) != NULL) return;
+    append_download_log(output, line);
+}
+
 static void print_usage(FILE *stream) {
     fprintf(stream,
             "Void-YT %s\n"
@@ -126,6 +188,12 @@ static int run_ytdlp(const voidyt_dependencies *deps,
         child_args[index++] = "best[acodec!=none][vcodec!=none]/best";
     }
     if (interactive_result > 0) {
+        child_args[index++] = "--no-playlist";
+        child_args[index++] = "--no-colors";
+        child_args[index++] = "--progress-template";
+        child_args[index++] = "download:" VOIDYT_PROGRESS_MARKER "%(progress._percent_str)s";
+        child_args[index++] = "--print";
+        child_args[index++] = "after_move:" VOIDYT_DONE_MARKER "%(filepath)s";
         child_args[index++] = "--format";
         child_args[index++] = selection.format;
         child_args[index++] = "--paths";
@@ -144,7 +212,28 @@ static int run_ytdlp(const voidyt_dependencies *deps,
     }
     child_args[index] = NULL;
 
-    result = voidyt_run_process(deps->ytdlp, child_args);
+    if (interactive_result > 0) {
+        voidyt_download_output output;
+        memset(&output, 0, sizeof(output));
+        output.last_percent = -1;
+        render_download_progress(0);
+        result = voidyt_run_process_capture(
+            deps->ytdlp, child_args, handle_download_output, &output);
+        if (result == 0) {
+            if (output.last_percent < 100) render_download_progress(100);
+            printf("\nDownload complete: %s\n", selection.directory);
+        } else {
+            printf("\n");
+            fprintf(stderr, "Download failed (exit code %d).\n", result);
+            if (output.log_length > 0) {
+                fprintf(stderr, "\n%s", output.logs);
+            } else {
+                fprintf(stderr, "No diagnostic output was returned by yt-dlp.\n");
+            }
+        }
+    } else {
+        result = voidyt_run_process(deps->ytdlp, child_args);
+    }
     free(child_args);
     return result;
 }

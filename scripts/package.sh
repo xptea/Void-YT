@@ -81,11 +81,26 @@ verify_sha256 "$yt_hash" "$stage/tools/yt-dlp"
 verify_sha256 "$qjs_hash" "$stage/tools/qjs"
 chmod 755 "$stage/tools/yt-dlp" "$stage/tools/qjs"
 
-menu_test_output="$work_dir/menu-test.tsv"
-"$stage/tools/qjs" --std "$project_dir/scripts/format-menu.js" \
-    "$project_dir/tests/fixtures/formats.json" "$menu_test_output"
-grep -q '^video[[:space:]]1080[[:space:]]mp4[[:space:]]12000000[[:space:]]' "$menu_test_output"
-grep -q '^audio[[:space:]]0[[:space:]]mp3[[:space:]]2000000[[:space:]]' "$menu_test_output"
+run_menu_test=0
+case "$(uname -s)-$(uname -m):$platform-$arch" in
+    Linux-x86_64:linux-x86_64 | \
+    Linux-amd64:linux-x86_64 | \
+    Linux-aarch64:linux-aarch64 | \
+    Linux-arm64:linux-aarch64 | \
+    Darwin-*:macos-universal)
+        run_menu_test=1
+        ;;
+esac
+
+if [ "$run_menu_test" -eq 1 ]; then
+    menu_test_output="$work_dir/menu-test.tsv"
+    "$stage/tools/qjs" --std "$project_dir/scripts/format-menu.js" \
+        "$project_dir/tests/fixtures/formats.json" "$menu_test_output"
+    grep -q '^video[[:space:]]1080[[:space:]]mp4[[:space:]]12000000[[:space:]]' "$menu_test_output"
+    grep -q '^audio[[:space:]]0[[:space:]]mp3[[:space:]]2000000[[:space:]]' "$menu_test_output"
+else
+    echo "Skipping QuickJS runtime test for cross-target $platform-$arch"
+fi
 
 cat > "$stage/BUILD_INFO.txt" <<EOF
 Void-YT: $version

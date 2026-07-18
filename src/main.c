@@ -126,6 +126,7 @@ static int run_ytdlp(const voidyt_dependencies *deps,
         child_args[index++] = "best[acodec!=none][vcodec!=none]/best";
     }
     if (interactive_result > 0) {
+        child_args[index++] = "--no-playlist";
         child_args[index++] = "--format";
         child_args[index++] = selection.format;
         child_args[index++] = "--paths";

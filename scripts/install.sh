@@ -31,9 +31,9 @@ work_dir=$(mktemp -d "${TMPDIR:-/tmp}/void-yt-install.XXXXXX")
 trap 'rm -rf "$work_dir"' EXIT HUP INT TERM
 base_url="https://github.com/$repo/releases/latest/download"
 
-echo "Downloading $asset..."
-curl -fL --retry 3 "$base_url/$asset" -o "$work_dir/$asset"
-curl -fL --retry 3 "$base_url/checksums.sha256" -o "$work_dir/checksums.sha256"
+echo "Installing Void-YT..."
+curl -fsSL --retry 3 "$base_url/$asset" -o "$work_dir/$asset"
+curl -fsSL --retry 3 "$base_url/checksums.sha256" -o "$work_dir/checksums.sha256"
 
 expected=$(awk -v name="$asset" '$2 == name || $2 == "*" name { print $1; exit }' "$work_dir/checksums.sha256")
 if [ -z "$expected" ]; then
@@ -56,8 +56,19 @@ cp -R "$work_dir/unpacked/." "$install_dir/"
 chmod 755 "$install_dir/void-yt" "$install_dir/tools/yt-dlp" "$install_dir/tools/qjs"
 ln -sfn "$install_dir/void-yt" "$bin_dir/void-yt"
 
-echo "Void-YT installed to $install_dir"
-case ":$PATH:" in
-    *":$bin_dir:"*) ;;
-    *) echo "Add $bin_dir to PATH, then run: void-yt doctor" ;;
-esac
+echo "Setting up media tools (one-time download)..."
+if doctor_output=$(VOID_YT_NO_UPDATE=1 "$install_dir/void-yt" doctor 2>&1); then
+    :
+else
+    echo "Media tool setup failed." >&2
+    printf '%s\n' "$doctor_output" >&2
+    exit 1
+fi
+if ! printf '%s\n' "$doctor_output" | grep -q '^\[ok\][[:space:]]*FFmpeg[[:space:]]'; then
+    echo "Media tool setup failed." >&2
+    printf '%s\n' "$doctor_output" >&2
+    exit 1
+fi
+
+echo "Void-YT is ready."
+echo 'Run: void-yt "youtube URL"'

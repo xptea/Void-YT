@@ -33,6 +33,8 @@ The Unix installer uses `~/.local/share/void-yt` and creates
 `~/.local/bin/void-yt`. The Windows installer uses
 `%LOCALAPPDATA%\Void-YT` and adds that directory to the user's `PATH`. Both
 installers verify the release archive against `checksums.sha256`.
+They also install and verify FFmpeg during setup, so the first download is
+ready immediately without running `doctor`.
 
 ## Usage
 

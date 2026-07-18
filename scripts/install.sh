@@ -5,11 +5,13 @@ repo=${VOID_YT_REPO:-@GITHUB_REPOSITORY@}
 install_dir=${VOID_YT_INSTALL_DIR:-"$HOME/.local/share/void-yt"}
 bin_dir=${VOID_YT_BIN_DIR:-"$HOME/.local/bin"}
 
-if [ "$repo" = "@GITHUB_REPOSITORY@" ]; then
-    echo "installer has not been stamped with its GitHub repository" >&2
-    echo "set VOID_YT_REPO=owner/repository and run again" >&2
-    exit 2
-fi
+case "$repo" in
+    @*)
+        echo "installer has not been stamped with its GitHub repository" >&2
+        echo "set VOID_YT_REPO=owner/repository and run again" >&2
+        exit 2
+        ;;
+esac
 
 os=$(uname -s)
 machine=$(uname -m)
@@ -59,4 +61,3 @@ case ":$PATH:" in
     *":$bin_dir:"*) ;;
     *) echo "Add $bin_dir to PATH, then run: void-yt doctor" ;;
 esac
-

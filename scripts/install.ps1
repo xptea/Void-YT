@@ -3,7 +3,7 @@ $Repository = if ($env:VOID_YT_REPO) { $env:VOID_YT_REPO } else { "@GITHUB_REPOS
 $InstallDirectory = if ($env:VOID_YT_INSTALL_DIR) { $env:VOID_YT_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA "Void-YT" }
 $Asset = "void-yt-windows-x86_64.zip"
 
-if ($Repository -eq "@GITHUB_REPOSITORY@") {
+if ($Repository.StartsWith("@")) {
     throw "Installer has not been stamped. Set VOID_YT_REPO=owner/repository and run again."
 }
 if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -ne [System.Runtime.InteropServices.Architecture]::X64) {
@@ -48,4 +48,3 @@ finally {
         Remove-Item -LiteralPath $WorkDirectory -Recurse -Force
     }
 }
-

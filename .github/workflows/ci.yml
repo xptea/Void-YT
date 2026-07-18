@@ -23,4 +23,18 @@ jobs:
         run: cmake --build build --config Release
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
-
+      - name: Test FFmpeg bootstrap (Linux and macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          app_dir="$RUNNER_TEMP/void-yt-ffmpeg"
+          mkdir -p "$app_dir/tools"
+          /bin/sh scripts/install-ffmpeg.sh "$app_dir" "$(command -v curl)"
+          "$app_dir/tools/ffmpeg" -version
+      - name: Test FFmpeg bootstrap (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $appDir = Join-Path $env:RUNNER_TEMP "void-yt-ffmpeg"
+          ./scripts/install-ffmpeg.ps1 -ApplicationDirectory $appDir -Curl (Get-Command curl.exe).Source
+          & (Join-Path $appDir "tools/ffmpeg.exe") -version

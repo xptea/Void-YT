@@ -27,7 +27,9 @@ cp "$project_dir/THIRD_PARTY_NOTICES.md" "$stage/THIRD_PARTY_NOTICES.md"
 cp "$project_dir/licenses/quickjs-ng.txt" "$stage/licenses/quickjs-ng.txt"
 cp "$project_dir/licenses/yt-dlp.txt" "$stage/licenses/yt-dlp.txt"
 cp "$project_dir/scripts/update.sh" "$stage/tools/update.sh"
-chmod 755 "$stage/void-yt" "$stage/tools/update.sh"
+cp "$project_dir/scripts/install-ffmpeg.sh" "$stage/tools/install-ffmpeg.sh"
+cp "$project_dir/scripts/format-menu.js" "$stage/tools/format-menu.js"
+chmod 755 "$stage/void-yt" "$stage/tools/update.sh" "$stage/tools/install-ffmpeg.sh"
 
 verify_sha256() {
     expected=$1
@@ -78,6 +80,12 @@ curl -fL --retry 3 \
 verify_sha256 "$yt_hash" "$stage/tools/yt-dlp"
 verify_sha256 "$qjs_hash" "$stage/tools/qjs"
 chmod 755 "$stage/tools/yt-dlp" "$stage/tools/qjs"
+
+menu_test_output="$work_dir/menu-test.tsv"
+"$stage/tools/qjs" --std "$project_dir/scripts/format-menu.js" \
+    "$project_dir/tests/fixtures/formats.json" "$menu_test_output"
+grep -q '^video[[:space:]]1080[[:space:]]mp4[[:space:]]12000000[[:space:]]' "$menu_test_output"
+grep -q '^audio[[:space:]]0[[:space:]]mp3[[:space:]]2000000[[:space:]]' "$menu_test_output"
 
 cat > "$stage/BUILD_INFO.txt" <<EOF
 Void-YT: $version

@@ -16,7 +16,15 @@ not linked into Void-YT.
 - License: MIT
 - Copyright belongs to the QuickJS and QuickJS-NG contributors.
 
-FFmpeg is not included. If Void-YT discovers an FFmpeg installation, it can be
-used by yt-dlp for merging and post-processing under that FFmpeg build's own
-license.
+## FFmpeg
 
+FFmpeg is not included in the Void-YT release archive. If it is missing,
+Void-YT downloads a pinned executable directly from a binary provider linked by
+the official FFmpeg download page. The downloaded executable remains an
+independent program used by yt-dlp for merging and post-processing.
+
+- Project and source: https://ffmpeg.org/
+- Download providers: https://ffmpeg.org/download.html
+- License and legal information: https://ffmpeg.org/legal.html
+- Windows and Linux provider: https://github.com/BtbN/FFmpeg-Builds
+- macOS provider: https://evermeet.cx/ffmpeg/

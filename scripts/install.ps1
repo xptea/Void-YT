@@ -6,10 +6,6 @@ $Asset = "void-yt-windows-x86_64.zip"
 if ($Repository.StartsWith("@")) {
     throw "Installer has not been stamped. Set VOID_YT_REPO=owner/repository and run again."
 }
-if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -ne [System.Runtime.InteropServices.Architecture]::X64) {
-    throw "This release currently supports Windows x86-64 only."
-}
-
 $WorkDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("void-yt-install-" + [guid]::NewGuid())
 $Archive = Join-Path $WorkDirectory $Asset
 $Checksums = Join-Path $WorkDirectory "checksums.sha256"

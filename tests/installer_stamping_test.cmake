@@ -10,6 +10,11 @@ if(NOT windows_bad_guard EQUAL -1)
     message(FATAL_ERROR "The stamped Windows installer rejects its valid repository")
 endif()
 
+string(FIND "${windows_stamped}" "RuntimeInformation]::OSArchitecture" windows_architecture_gate)
+if(NOT windows_architecture_gate EQUAL -1)
+    message(FATAL_ERROR "The Windows installer must let Windows determine executable compatibility")
+endif()
+
 string(FIND "${unix_stamped}" "[ \"$repo\" = \"xptea/Void-YT\" ]" unix_bad_guard)
 if(NOT unix_bad_guard EQUAL -1)
     message(FATAL_ERROR "The stamped Unix installer rejects its valid repository")

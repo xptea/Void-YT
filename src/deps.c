@@ -174,6 +174,8 @@ int voidyt_discover_dependencies(const char *argv0, voidyt_dependencies *deps) {
                  deps->qjs, sizeof(deps->qjs));
     discover_one("VOID_YT_FFMPEG", deps->app_dir, "ffmpeg.exe", "ffmpeg.exe",
                  deps->ffmpeg, sizeof(deps->ffmpeg));
+    discover_one("VOID_YT_CURL", deps->app_dir, "curl.exe", "curl.exe",
+                 deps->curl, sizeof(deps->curl));
 #else
     discover_one("VOID_YT_YTDLP", deps->app_dir, "yt-dlp", "yt-dlp",
                  deps->ytdlp, sizeof(deps->ytdlp));
@@ -181,6 +183,8 @@ int voidyt_discover_dependencies(const char *argv0, voidyt_dependencies *deps) {
                  deps->qjs, sizeof(deps->qjs));
     discover_one("VOID_YT_FFMPEG", deps->app_dir, "ffmpeg", "ffmpeg",
                  deps->ffmpeg, sizeof(deps->ffmpeg));
+    discover_one("VOID_YT_CURL", deps->app_dir, "curl", "curl",
+                 deps->curl, sizeof(deps->curl));
 #endif
     return deps->ytdlp[0] != '\0';
 }

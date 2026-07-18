@@ -13,20 +13,18 @@ high-quality streams and perform post-processing.
 
 ## Install
 
-After the first GitHub release is published, replace `OWNER` below with the
-repository owner. The release workflow stamps the installer with the repository
-automatically.
+The release workflow stamps each installer with this repository automatically.
 
 Linux and macOS:
 
 ```sh
-curl -fsSL https://github.com/OWNER/Void-YT/releases/latest/download/install.sh | sh
+curl -fsSL https://github.com/xptea/Void-YT/releases/latest/download/install.sh | sh
 ```
 
 Windows PowerShell:
 
 ```powershell
-curl.exe -fsSL https://github.com/OWNER/Void-YT/releases/latest/download/install.ps1 |
+curl.exe -fsSL https://github.com/xptea/Void-YT/releases/latest/download/install.ps1 |
   powershell -NoProfile -ExecutionPolicy Bypass -Command -
 ```
 

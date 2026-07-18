@@ -1,0 +1,85 @@
+# Void-YT
+
+Void-YT is a small, open-source C terminal application for downloading media.
+Official release archives bundle a pinned yt-dlp and QuickJS, so users do not
+need Python, Node, Deno, or a separate yt-dlp installation.
+
+FFmpeg is deliberately optional. When FFmpeg is unavailable, Void-YT downloads
+the best format that already contains both video and audio. When FFmpeg is on
+`PATH` (or configured with `VOID_YT_FFMPEG`), yt-dlp can merge separate
+high-quality streams and perform post-processing.
+
+> Only download media you are authorized to access. Void-YT does not bypass DRM.
+
+## Install
+
+After the first GitHub release is published, replace `OWNER` below with the
+repository owner. The release workflow stamps the installer with the repository
+automatically.
+
+Linux and macOS:
+
+```sh
+curl -fsSL https://github.com/OWNER/Void-YT/releases/latest/download/install.sh | sh
+```
+
+Windows PowerShell:
+
+```powershell
+curl.exe -fsSL https://github.com/OWNER/Void-YT/releases/latest/download/install.ps1 |
+  powershell -NoProfile -ExecutionPolicy Bypass -Command -
+```
+
+The Unix installer uses `~/.local/share/void-yt` and creates
+`~/.local/bin/void-yt`. The Windows installer uses
+`%LOCALAPPDATA%\Void-YT` and adds that directory to the user's `PATH`. Both
+installers verify the release archive against `checksums.sha256`.
+
+## Usage
+
+```text
+void-yt doctor
+void-yt "https://www.youtube.com/watch?v=..."
+void-yt formats "https://www.youtube.com/watch?v=..."
+void-yt download URL [additional yt-dlp options]
+```
+
+Additional arguments following the URL are passed directly to yt-dlp without
+invoking a shell.
+
+Environment overrides:
+
+- `VOID_YT_YTDLP`: path to a different yt-dlp executable.
+- `VOID_YT_QJS`: path to a different `qjs` executable.
+- `VOID_YT_FFMPEG`: path to an FFmpeg executable.
+- `VOID_YT_REPO`: installer repository override, such as `owner/Void-YT`.
+- `VOID_YT_INSTALL_DIR`: installer destination override.
+
+## Build from source
+
+Requirements: a C17 compiler and CMake 3.20 or newer.
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+A source build discovers yt-dlp and QuickJS from `PATH` or the environment
+overrides above. The release packaging scripts download and checksum the pinned
+standalone tools into a `tools` directory beside the Void-YT executable.
+
+## Release process
+
+Push a version tag such as `v0.1.0`. GitHub Actions will:
+
+1. Build and test the C executable on Linux, macOS, and Windows.
+2. Produce Linux x86-64/ARM64, universal macOS, and Windows x86-64 archives.
+3. Add checksum-verified yt-dlp and QuickJS binaries.
+4. Generate SHA-256 checksums and build-provenance attestations.
+5. Publish the archives and stamped installers to GitHub Releases.
+
+Dependency versions and hashes are intentionally pinned in
+`scripts/package.sh` and `scripts/package.ps1`. Updating either tool requires
+updating its version and verified SHA-256 values together.
+

@@ -49,6 +49,19 @@ if(BUILD_TESTING)
         target_compile_options(version-test PRIVATE -Wall -Wextra -Wpedantic)
     endif()
     add_test(NAME version-comparison COMMAND version-test)
+
+    add_executable(process-capture-test
+        tests/process_capture_test.c
+        src/process.c
+    )
+    target_include_directories(process-capture-test PRIVATE src)
+    if(MSVC)
+        target_compile_options(process-capture-test PRIVATE /W4 /permissive-)
+    else()
+        target_compile_options(process-capture-test PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+    add_test(NAME process-capture COMMAND process-capture-test)
+
     add_test(NAME installer-stamping
         COMMAND ${CMAKE_COMMAND}
             -DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}
